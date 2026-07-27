@@ -186,3 +186,17 @@ Swagger forma parte del desarrollo del Starter.
 No constituye una tarea posterior.
 
 Cada módulo deberá quedar completamente documentado al finalizar su implementación.
+
+
+### Toda modificación sobre la identidad o permisos de un usuario invalida la sesión actual. El usuario deberá autenticarse nuevamente para obtener un JWT actualizado.
+
+Eso incluye:
+
+* contraseña;
+* email;
+* nombre y apellido;
+* roles;
+* permisos.
+
+Entonces el usuario debe autenticarse nuevamente y recibe un JWT completamente actualizado.
+

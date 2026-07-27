@@ -6,6 +6,7 @@ import {
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
@@ -49,10 +50,17 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Get('me')
+//   @Get('me')
+// @UseGuards(AuthGuard('jwt'))
+// getProfile(@Req() req) {
+//     return req.user;
+// }
+
+@Get('me')
+@ApiBearerAuth('JWT')
 @UseGuards(AuthGuard('jwt'))
 getProfile(@Req() req) {
-    return req.user;
+  return req.user;
 }
 
 }

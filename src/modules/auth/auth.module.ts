@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-//import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import {StringValue} from 'ms';
+import { JwtStrategy } from './jwtStrategy';
 
 @Module({
     imports: [
@@ -26,7 +26,7 @@ import {StringValue} from 'ms';
 
     ],  
     controllers:[AuthController],
-    providers: [AuthService],//falta authservice y jwtstrategy
+    providers: [AuthService, JwtStrategy],
     exports: [PassportModule, JwtModule]//falta jwtStrategy
 
 })

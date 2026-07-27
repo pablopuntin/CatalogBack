@@ -17,12 +17,26 @@ async function bootstrap() {
     }),
   );
 
+  // const config = new DocumentBuilder()
+  //   .setTitle('Backend Starter')
+  //   .setDescription('API del Backend Starter')
+  //   .setVersion('1.0.0')
+  //   .addBearerAuth()
+  //   .build();
+
   const config = new DocumentBuilder()
-    .setTitle('Backend Starter')
-    .setDescription('API del Backend Starter')
-    .setVersion('1.0.0')
-    .addBearerAuth()
-    .build();
+  .setTitle('Backend Starter')
+  .setDescription('API del Backend Starter')
+  .setVersion('1.0.0')
+  .addBearerAuth(
+    {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    },
+    'JWT',
+  )
+  .build();
 
   const document = SwaggerModule.createDocument(app, config);
 
