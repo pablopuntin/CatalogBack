@@ -18,14 +18,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: {
     sub: string;
     name: string,
-    lastname: string,
+    lastName: string,
   }) {
     console.log('PAYLOAD', payload);
     return {
       id: payload.sub,
       //email: payload.email, //quizas quiera enviar name y lastName, igual que rol y permiso, no creo que deba enviar email
       name: payload.name,
-      lastName: payload.lastname
+      lastName: payload.lastName
     };
   }
 }

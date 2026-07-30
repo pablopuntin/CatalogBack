@@ -5,14 +5,17 @@ import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UsersModule } from '../users/users.module';
-import { AuthController } from './auth.controller';
+
 import {StringValue} from 'ms';
 import { JwtStrategy } from './jwtStrategy';
+import { RefreshTokensModule } from '../refresh-tokens/refresh-tokens.module';
+import { AuthController } from './auth.controller';
 
 @Module({
     imports: [
       PrismaModule,
       UsersModule,
+      RefreshTokensModule,
         PassportModule.register({defaultStrategy: 'jwt'}),
     JwtModule.registerAsync({
   inject: [ConfigService],

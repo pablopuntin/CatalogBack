@@ -16,6 +16,11 @@ enum UserStatus {
 }
 
 
+enum CurrencyCode {
+  ARS
+  USD
+  EUR
+}
 
 model Permission {
   @@map("permissions")
@@ -112,23 +117,275 @@ model UserRole {
 }
 
 model RefreshToken {
-  @@map("refresh_tokens")
+
+  // Identidad
   id String @id @default(cuid())
 
-  tokenHash String @unique
-
-  userId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  // Datos
+  token String
   expiresAt DateTime
 
-  revokedAt DateTime?
+  // Relaciones
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // id del RefreshToken que reemplazó a éste
-  replacedByTokenId String?
+  // Auditoría
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+///////////////////////////////////////////////////////
+//
+// CATALOGO
+//
+///////////////////////////////////////////////////////
+
+model BusinessConfig {
+  id String @id @default(cuid())
+
+  businessName String
+  legalName    String?
+
+  logoUrl      String?
+  heroImageUrl String?
+  businessDescription String?
+
+  whatsapp String
+  phone    String?
+  email    String?
+
+  website   String?
+  facebook  String?
+  instagram String?
+  tiktok    String?
+
+  address  String?
+  city     String?
+  province String?
+  country  String?
+
+  currency CurrencyCode @default(ARS)
+
+  businessHours String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("business_config")
+}
+
+model Category {
+  id String @id @default(cuid())
+
+  name String
+  slug String @unique
+
+  description String?
+
+  imageUrl String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  brands   CategoryBrand[]
+  products ProductCategory[]
+
+  @@map("categories")
+}
+
+model Brand {
+  id String @id @default(cuid())
+
+  name String
+  slug String @unique
+
+  description String?
+
+  logoUrl String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  categories CategoryBrand[]
+
+  products Product[]
+
+  @@map("brands")
+}
+
+model Product {
+  id String @id @default(cuid())
+
+  name String
+
+  slug String @unique
+
+  description String?
+
+  sku String?
+
+  price Decimal @db.Decimal(10,2)
+
+  active Boolean @default(true)
+
+  brandId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  brand Brand @relation(fields: [brandId], references: [id])
+
+  categories ProductCategory[]
+
+  images ProductImage[]
+
+  promotions PromotionProduct[]
+
+  quoteItems QuoteItem[]
+
+  @@map("products")
+}
+
+
+model ProductImage {
+  id String @id @default(cuid())
+
+  productId String
+
+  url String
+
+  publicId String
+
+  alt String?
+
+  sortOrder Int @default(0)
+
+  isPrimary Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+
+model Promotion {
+  id String @id @default(cuid())
+
+  name String
+
+  description String?
+
+  active Boolean @default(true)
+
+  startsAt DateTime?
+
+  endsAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  products PromotionProduct[]
+
+  @@map("promotions")
+}
+
+
+model Quote {
+  id String @id @default(cuid())
+
+  customerName String?
+
+  customerPhone String
+
+  customerEmail String?
+
+  notes String?
 
   createdAt DateTime @default(now())
 
-  @@index([userId])
+  items QuoteItem[]
+
+  @@map("quotes")
+}
+
+
+model QuoteItem {
+  id String @id @default(cuid())
+
+  quoteId String
+
+  productId String
+
+  quantity Int @default(1)
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("quote_items")
+}
+
+///////////////////////////////////////////////////////
+//
+// TABLAS PUENTE
+//
+///////////////////////////////////////////////////////
+
+model CategoryBrand {
+
+  categoryId String
+
+  brandId String
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, brandId])
+
+  @@map("category_brands")
+}
+
+
+model ProductCategory {
+
+  productId String
+
+  categoryId String
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+
+  @@map("product_categories")
+}
+
+
+model PromotionProduct {
+
+  promotionId String
+
+  productId String
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, productId])
+
+  @@map("promotion_products")
 }

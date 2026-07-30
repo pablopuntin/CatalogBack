@@ -1,3 +1,5 @@
+Después podremos mejorar el refresh implementando rotación de Refresh Tokens (invalidar el viejo y generar uno nuevo), que hoy es la práctica recomendada, pero para un Starter esta primera versión ya deja el módulo de autenticación completo y funcional.
+
 # Convenciones Prisma
 
 ## Modelos
@@ -219,3 +221,4 @@ findOne()
 update()
 
 remove()
+
