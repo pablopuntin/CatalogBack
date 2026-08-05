@@ -2,7 +2,7 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { RegisterDto } from './dto/register.dto';
+
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { ConfigService } from '@nestjs/config';
@@ -19,73 +19,8 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
-    // Verificar si el email ya existe
-    const existingUser = await this.usersService.findByEmail(
-      registerDto.email,
-    );
+  
 
-    if (existingUser) {
-      throw new ConflictException(
-        'El correo electrónico ya está registrado.',
-      );
-    }
-
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(
-      registerDto.password,
-      10,
-    );
-
-    // Crear el usuario
-    const user = await this.usersService.create({
-      ...registerDto,
-      password: hashedPassword,
-    });
-
-    // Respuesta al cliente
-   return {
-  message: 'Usuario creado correctamente.',
-};
-  }
-
-  //   async login(loginDto: LoginDto) {
-  //   const user = await this.usersService.findByEmail(
-  //     loginDto.email,
-  //   );
-
-  //   if (!user) {
-  //     throw new UnauthorizedException(
-  //       'Credenciales inválidas.',
-  //     );
-  //   }
-
-  //   const passwordMatch = await bcrypt.compare(
-  //     loginDto.password,
-  //     user.password,
-  //   );
-
-  //   if (!passwordMatch) {
-  //     throw new UnauthorizedException(
-  //       'Credenciales inválidas.',
-  //     );
-  //   }
-
-  //   const payload = {
-  //     sub: user.id,
-  //     //email: user.email,
-  //     name: user.firstName,
-  //     lastName: user.lastName,
-  //   };
-
-  //   const accessToken = await this.jwtService.signAsync(payload);
-
-  //   return {
-  //     access_token: accessToken,
-  //   };
-  // }
-
-  //REFACTOR
   async login(loginDto: LoginDto) {
   const user = await this.usersService.findByEmail(
     loginDto.email,
@@ -108,10 +43,27 @@ export class AuthService {
     );
   }
 
- const payload = {
+ const roles = user.userRoles.map(
+  (userRole) => userRole.role.name,
+);
+
+const permissions = [
+  ...new Set(
+    user.userRoles.flatMap((userRole) =>
+      userRole.role.rolePermissions.map(
+        (rolePermission) =>
+          rolePermission.permission.name,
+      ),
+    ),
+  ),
+];
+
+const payload = {
   sub: user.id,
   name: user.firstName,
   lastName: user.lastName,
+  roles,
+  permissions,
 };
 
   const accessToken = await this.jwtService.signAsync(
@@ -163,11 +115,18 @@ async refresh(
     );
   }
 
-  const payload = {
-    sub: session.user.id,
-    name: session.user.firstName,
-    lastName: session.user.lastName,
-  };
+  const accessData =
+  await this.usersService.getUserAccessData(
+    session.user.id,
+  );
+
+const payload = {
+  sub: session.user.id,
+  name: session.user.firstName,
+  lastName: session.user.lastName,
+  roles: accessData?.roles ?? [],
+  permissions: accessData?.permissions ?? [],
+};
 
   const accessToken =
     await this.jwtService.signAsync(payload);

@@ -231,7 +231,7 @@ model Product {
 
   sku String?
 
-  price Decimal @db.Decimal(10,2)
+  price Decimal @db.Decimal(14,2)
 
   active Boolean @default(true)
 
@@ -262,7 +262,7 @@ model ProductImage {
 
   url String
 
-  publicId String
+  publicId String?
 
   alt String?
 
@@ -279,21 +279,33 @@ model ProductImage {
 }
 
 
+//enum para promotions
+enum PromotionType {
+  PERCENTAGE
+  TWO_FOR_ONE
+  FIXED
+  FEATURED
+}
+
+
 model Promotion {
   id String @id @default(cuid())
 
-  name String
-
+  name        String
   description String?
+  type        PromotionType @default(FEATURED)
 
-  active Boolean @default(true)
+  // Para PERCENTAGE: valor entre 0 y 100
+  // Para FIXED: monto fijo de descuento
+  // Para TWO_FOR_ONE y FEATURED: null
+  discountValue Decimal? @db.Decimal(10, 2)
 
+  active   Boolean   @default(true)
   startsAt DateTime?
+  endsAt   DateTime?
 
-  endsAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   products PromotionProduct[]
@@ -301,13 +313,12 @@ model Promotion {
   @@map("promotions")
 }
 
-
 model Quote {
   id String @id @default(cuid())
 
   customerName String?
 
-  customerPhone String
+  customerPhone String?
 
   customerEmail String?
 

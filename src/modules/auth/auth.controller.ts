@@ -1,103 +1,93 @@
-import { Body, Controller, Post } from '@nestjs/common';
+//REF SIN PERMISSIONS
 import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
   ApiBody,
-  ApiConflictResponse,
+  ApiHeader,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
-  ApiBearerAuth
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { UseGuards, Get, Req } from '@nestjs/common';
 import { RefreshTokenDto } from '../refresh-tokens/dto/refresh-token.dto';
-
-
+import { InstallDto } from './install/dto/install.dto';
+import { InstallGuard } from './install/install.guard';
+import { InstallService } from './install/install.service';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-      ) {}
+    private readonly installService: InstallService,
+  ) {}
 
-  @Post('register')
-  @ApiOperation({ summary: 'Registrar un nuevo usuario' })
-  @ApiBody({ type: RegisterDto })
-  @ApiOkResponse({
-    description: 'Usuario creado correctamente.',
+  @Post('install')
+  @UseGuards(InstallGuard)
+  @HttpCode(201)
+  @ApiHeader({
+    name: 'X-Install-Token',
+    description: 'Token de instalación generado en consola',
+    required: true,
   })
-  @ApiConflictResponse({
-    description: 'El correo electrónico ya está registrado.',
-  })
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @ApiOperation({ summary: 'Crear usuario ROOT — solo primera instalación' })
+  async install(@Body() dto: InstallDto) {
+    await this.installService.createRoot(dto.email, dto.password);
+    return {
+      message: 'ROOT creado. Este endpoint está desactivado permanentemente.',
+    };
   }
 
   @Post('login')
+  @Throttle({default: {ttl: 900000, limit: 5}})//5 intentos cada 15 minutos
+  @HttpCode(200)
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiBody({ type: LoginDto })
-  @ApiOkResponse({
-    description: 'Login exitoso.',
-  })
-  @ApiUnauthorizedResponse({
-    description: 'Credenciales inválidas.',
-  })
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  @ApiOkResponse({ description: 'Login exitoso.' })
+  @ApiUnauthorizedResponse({ description: 'Credenciales inválidas.' })
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
+  @Get('me')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ROOT', 'ADMIN', 'EMPLOYEE')
+  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
+  getProfile(@Req() req) {
+    return req.user;
+  }
 
-@Get('me')
-@ApiBearerAuth('JWT')
-@UseGuards(AuthGuard('jwt'))
-getProfile(@Req() req) {
-  return req.user;
-}
+  @Post('refresh')
+  @ApiOperation({ summary: 'Renovar Access Token' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiOkResponse({ description: 'Access Token renovado correctamente.' })
+  @ApiUnauthorizedResponse({ description: 'Refresh Token inválido.' })
+  refresh(@Body() dto: RefreshTokenDto) {
+    return this.authService.refresh(dto);
+  }
 
-
-@ApiOperation({
-  summary: 'Renovar Access Token',
-})
-@ApiBody({
-  type: RefreshTokenDto,
-})
-@ApiOkResponse({
-  description: 'Access Token renovado correctamente.',
-})
-@ApiUnauthorizedResponse({
-  description: 'Refresh Token inválido.',
-})
-@Post('refresh')
-refresh(
-  @Body() refreshTokenDto: RefreshTokenDto,
-) {
-  return this.authService.refresh(refreshTokenDto);
-}
-
-@Post('logout')
-@ApiOperation({
-  summary: 'Cerrar sesión',
-})
-@ApiBody({
-  type: RefreshTokenDto,
-})
-@ApiOkResponse({
-  description: 'Sesión cerrada correctamente.',
-})
-@ApiUnauthorizedResponse({
-  description: 'Refresh Token inválido.',
-})
-logout(
-  @Body() refreshTokenDto: RefreshTokenDto,
-) {
-  return this.authService.logout(
-    refreshTokenDto,
-  );
-}
-
+  @Post('logout')
+  @ApiOperation({ summary: 'Cerrar sesión' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiOkResponse({ description: 'Sesión cerrada correctamente.' })
+  @ApiUnauthorizedResponse({ description: 'Refresh Token inválido.' })
+  logout(@Body() dto: RefreshTokenDto) {
+    return this.authService.logout(dto);
+  }
 }

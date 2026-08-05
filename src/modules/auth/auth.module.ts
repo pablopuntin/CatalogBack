@@ -10,6 +10,8 @@ import {StringValue} from 'ms';
 import { JwtStrategy } from './jwtStrategy';
 import { RefreshTokensModule } from '../refresh-tokens/refresh-tokens.module';
 import { AuthController } from './auth.controller';
+import { InstallService } from './install/install.service';
+import { InstallGuard } from './install/install.guard';
 
 @Module({
     imports: [
@@ -29,7 +31,7 @@ import { AuthController } from './auth.controller';
 
     ],  
     controllers:[AuthController],
-    providers: [AuthService, JwtStrategy],
+    providers: [AuthService, JwtStrategy, InstallService, InstallGuard],
     exports: [PassportModule, JwtModule]//falta jwtStrategy
 
 })

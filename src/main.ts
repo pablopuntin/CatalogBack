@@ -17,26 +17,21 @@ async function bootstrap() {
     }),
   );
 
-  // const config = new DocumentBuilder()
-  //   .setTitle('Backend Starter')
-  //   .setDescription('API del Backend Starter')
-  //   .setVersion('1.0.0')
-  //   .addBearerAuth()
-  //   .build();
-
   const config = new DocumentBuilder()
-  .setTitle('Backend Starter')
-  .setDescription('API del Backend Starter')
-  .setVersion('1.0.0')
-  .addBearerAuth(
-    {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-    },
-    'JWT',
-  )
-  .build();
+    .setTitle('Backend Starter')
+    .setDescription('API del Backend Starter')
+    .setVersion('1.0.0')
+    .addBearerAuth()
+    .build();
+
+  app.enableCors({
+  origin: [
+    'http://localhost:3000',
+    'http://192.168.1.105:3000',  // tu IP local para pruebas desde celular
+  ],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  credentials: true,
+});
 
   const document = SwaggerModule.createDocument(app, config);
 

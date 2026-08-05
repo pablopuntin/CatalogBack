@@ -222,3 +222,26 @@ update()
 
 remove()
 
+
+Sí. El orden que seguiría es:
+
+Terminar autorización
+Crear PermissionsGuard.
+Crear Permissions decorator.
+Agregar permisos al JWT.
+Verificar ROOT, ADMIN y EMPLOYEE.
+Completar el starter de autenticación
+Asignación de roles.
+Asignación de permisos.
+Creación de usuarios con roles.
+Endpoint para administrar permisos.
+Probar la API completa desde Swagger
+CRUD de BusinessConfig.
+CRUD de Categories.
+CRUD de Brands.
+CRUD de Products.
+Conectar el frontend con la API.
+Continuar con los módulos restantes
+Product Images.
+Promotions.
+Quotes.

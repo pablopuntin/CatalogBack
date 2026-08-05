@@ -3,8 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 
-
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
@@ -15,17 +13,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+
   async validate(payload: {
-    sub: string;
-    name: string,
-    lastName: string,
-  }) {
-    console.log('PAYLOAD', payload);
-    return {
-      id: payload.sub,
-      //email: payload.email, //quizas quiera enviar name y lastName, igual que rol y permiso, no creo que deba enviar email
-      name: payload.name,
-      lastName: payload.lastName
-    };
-  }
+  sub: string;
+  name: string;
+  lastName: string;
+  roles: string[];
+  permissions: string[];
+}) {
+  return {
+    id: payload.sub,
+    name: payload.name,
+    lastName: payload.lastName,
+    roles: payload.roles,
+    permissions: payload.permissions,
+  };
+}
+
+
 }
