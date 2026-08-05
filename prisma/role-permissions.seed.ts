@@ -1,36 +1,3 @@
-// import { PrismaClient } from '@prisma/client';
-
-// export async function seedRolePermissions(
-//   prisma: PrismaClient,
-// ) {
-//   const root = await prisma.role.findUnique({
-//     where: {
-//       name: 'ROOT',
-//     },
-//   });
-
-//   if (!root) return;
-
-//   const permissions =
-//     await prisma.permission.findMany();
-
-//   for (const permission of permissions) {
-//     await prisma.rolePermission.upsert({
-//       where: {
-//         roleId_permissionId: {
-//           roleId: root.id,
-//           permissionId: permission.id,
-//         },
-//       },
-//       update: {},
-//       create: {
-//         roleId: root.id,
-//         permissionId: permission.id,
-//       },
-//     });
-//   }
-// }
-
 //ref para agregar permisos a rol ADMIN
 import { PrismaClient } from '@prisma/client';
 
