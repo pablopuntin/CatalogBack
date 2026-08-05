@@ -28,6 +28,7 @@ async function bootstrap() {
   origin: [
     'http://localhost:3000',
     'http://192.168.1.105:3000',  // tu IP local para pruebas desde celular
+    'https://catalogo-brown-sigma.vercel.app',
   ],
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   credentials: true,
