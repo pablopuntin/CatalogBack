@@ -24,15 +24,36 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  app.enableCors({
-  origin: [
-    'http://localhost:3000',
-    'http://192.168.1.105:3000',  // tu IP local para pruebas desde celular
-    'https://catalogo-brown-sigma.vercel.app',
-  ],
+//   app.enableCors({
+//   origin: [
+//     'http://localhost:3000',
+//     'http://192.168.1.105:3000',  // tu IP local para pruebas desde celular
+//     'https://catalogo-brown-sigma.vercel.app',
+//   ],
+//   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+//   credentials: true,
+// });
+
+//ref, permite todos los subdominios de vercel
+app.enableCors({
+  origin: (origin, callback) => {
+    const allowed = [
+      'http://localhost:3000',
+      'http://192.168.1.105:3000',
+      'https://catalogo-brown-sigma.vercel.app',
+    ];
+
+    // Permite cualquier subdominio de Vercel (deploys de preview)
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   credentials: true,
 });
+
 
   const document = SwaggerModule.createDocument(app, config);
 
