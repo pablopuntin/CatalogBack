@@ -7,13 +7,16 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBusinessConfigDto } from './dto/create-business-config.dto';
 import { UpdateBusinessConfigDto } from './dto/update-business-config.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class BusinessConfigService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+ 
   async create(createBusinessConfigDto: CreateBusinessConfigDto) {
     const existing = await this.prisma.businessConfig.findFirst();
 
@@ -62,4 +65,29 @@ export class BusinessConfigService {
       data: updateBusinessConfigDto,
     });
   }
+
+   // Método para subir imagen
+async uploadImage(file: Express.Multer.File, type: 'logo' | 'hero') {
+  const config = await this.prisma.businessConfig.findFirst();
+
+  if (!config) {
+    throw new NotFoundException(
+      'No existe una configuración del negocio. Creala primero.',
+    );
+  }
+
+  const { url } = await this.cloudinaryService.uploadImage(
+    file,
+    'catalog/business',
+  );
+
+  const field = type === 'logo' ? 'logoUrl' : 'heroImageUrl';
+
+  return this.prisma.businessConfig.update({
+    where: { id: config.id },
+    data: { [field]: url },
+  });
+}
+
+
 }

@@ -63,6 +63,8 @@ import { QuotesModule } from './modules/quotes/quotes.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { ProductImagesModule } from './modules/product-images/product-images.module';
 
 
 @Module({
@@ -91,6 +93,8 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
     CatalogModule,
     QuotesModule,
     PromotionsModule,
+    CloudinaryModule,
+    ProductImagesModule,
   ],
   controllers: [AppController],
   providers: [

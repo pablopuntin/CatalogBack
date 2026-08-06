@@ -40,6 +40,7 @@ app.enableCors({
     const allowed = [
       'http://localhost:3000',
       'http://192.168.1.105:3000',
+      'http://localhost:3001',
       'https://catalogo-brown-sigma.vercel.app',
     ];
 
