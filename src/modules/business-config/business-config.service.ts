@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBusinessConfigDto } from './dto/create-business-config.dto';
 import { UpdateBusinessConfigDto } from './dto/update-business-config.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import type { MulterFile } from 'src/common/types/multer.type';
 
 @Injectable()
 export class BusinessConfigService {
@@ -67,7 +68,7 @@ export class BusinessConfigService {
   }
 
    // Método para subir imagen
-async uploadImage(file: Express.Multer.File, type: 'logo' | 'hero') {
+async uploadImage(file: MulterFile, type: 'logo' | 'hero') {
   const config = await this.prisma.businessConfig.findFirst();
 
   if (!config) {

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import type { MulterFile } from 'src/common/types/multer.type';
 
 @Injectable()
 export class ProductImagesService {
@@ -10,9 +11,7 @@ export class ProductImagesService {
   ) {}
 
   async upload(
-    productId: string,
-    file: Express.Multer.File,
-    isPrimary = false,
+    productId: string, file: MulterFile, isPrimary = false
   ) {
     const product = await this.prisma.product.findFirst({
       where: { id: productId, deletedAt: null },

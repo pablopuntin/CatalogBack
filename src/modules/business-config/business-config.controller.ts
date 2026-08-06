@@ -1,79 +1,3 @@
-// import {
-//   Body,
-//   Controller,
-//   Get,
-//   Patch,
-//   Post,
-//   UseGuards,
-// } from '@nestjs/common';
-// import {
-//   ApiBearerAuth,
-//   ApiCreatedResponse,
-//   ApiNotFoundResponse,
-//   ApiOkResponse,
-//   ApiOperation,
-//   ApiTags,
-// } from '@nestjs/swagger';
-
-// import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-// import { RolesGuard } from 'src/common/guards/roles.guard';
-// import { Roles } from 'src/common/decorators/roles.decorator';
-// import { SystemRole } from 'src/common/constants/roles';
-
-// import { BusinessConfigService } from './business-config.service';
-// import { CreateBusinessConfigDto } from './dto/create-business-config.dto';
-// import { UpdateBusinessConfigDto } from './dto/update-business-config.dto';
-
-
-// @ApiTags('Business Config')
-// @Controller('business-config')
-// export class BusinessConfigController {
-//   constructor(
-//     private readonly businessConfigService: BusinessConfigService,
-//   ) {}
-
-//   // ── Público ──────────────────────────────────────
-//   @Get('public')
-//   @ApiOperation({ summary: 'Obtener configuración pública del negocio' })
-//   @ApiOkResponse()
-//   findPublic() {
-//     return this.businessConfigService.find();
-//   }
-
-//   // ── Protegidos ────────────────────────────────────
-//   @Post()
-//   @UseGuards(JwtAuthGuard, RolesGuard)
-//   @Roles(SystemRole.ROOT, SystemRole.ADMIN)
-//   @ApiBearerAuth()
-//   @ApiOperation({ summary: 'Crear configuración inicial del negocio' })
-//   @ApiCreatedResponse()
-//   create(@Body() dto: CreateBusinessConfigDto) {
-//     return this.businessConfigService.create(dto);
-//   }
-
-//   @Get()
-//   @UseGuards(JwtAuthGuard, RolesGuard)
-//   @Roles(SystemRole.ROOT, SystemRole.ADMIN)
-//   @ApiBearerAuth()
-//   @ApiOperation({ summary: 'Obtener configuración completa — requiere auth' })
-//   @ApiOkResponse()
-//   @ApiNotFoundResponse()
-//   find() {
-//     return this.businessConfigService.find();
-//   }
-
-//   @Patch()
-//   @UseGuards(JwtAuthGuard, RolesGuard)
-//   @Roles(SystemRole.ROOT, SystemRole.ADMIN)
-//   @ApiBearerAuth()
-//   @ApiOperation({ summary: 'Actualizar configuración del negocio' })
-//   @ApiOkResponse()
-//   @ApiNotFoundResponse()
-//   update(@Body() dto: UpdateBusinessConfigDto) {
-//     return this.businessConfigService.update(dto);
-//   }
-// }
-
 //ref
 import {
   Body,
@@ -107,6 +31,7 @@ import { SystemRole } from 'src/common/constants/roles';
 import { BusinessConfigService } from './business-config.service';
 import { CreateBusinessConfigDto } from './dto/create-business-config.dto';
 import { UpdateBusinessConfigDto } from './dto/update-business-config.dto';
+import type { MulterFile } from 'src/common/types/multer.type';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -189,7 +114,7 @@ export class BusinessConfigController {
       },
     },
   })
-  uploadLogo(@UploadedFile() file: Express.Multer.File) {
+ uploadLogo(@UploadedFile() file: MulterFile) {
     if (!file) throw new BadRequestException('No se recibió ningún archivo.');
     return this.businessConfigService.uploadImage(file, 'logo');
   }
@@ -209,7 +134,7 @@ export class BusinessConfigController {
       },
     },
   })
-  uploadHero(@UploadedFile() file: Express.Multer.File) {
+  uploadHero(@UploadedFile() file: MulterFile) {
     if (!file) throw new BadRequestException('No se recibió ningún archivo.');
     return this.businessConfigService.uploadImage(file, 'hero');
   }

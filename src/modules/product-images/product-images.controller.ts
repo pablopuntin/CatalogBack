@@ -24,6 +24,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { SystemRole } from 'src/common/constants/roles';
 import { ProductImagesService } from './product-images.service';
+import type { MulterFile } from 'src/common/types/multer.type';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -68,20 +69,36 @@ export class ProductImagesController {
       },
     },
   })
-  uploadImage(
-    @Param('id') productId: string,
-    @UploadedFile() file: Express.Multer.File,
-    @Body('isPrimary') isPrimary?: string,
-  ) {
-    if (!file) {
-      throw new BadRequestException('No se recibió ningún archivo.');
-    }
-    return this.productImagesService.upload(
-      productId,
-      file,
-      isPrimary === 'true',
-    );
+
+
+//  uploadImage(
+//     @Param('id') 
+//     productId: string, 
+//     @UploadedFile() file: MulterFile, ...) {
+//     if (!file) {
+//       throw new BadRequestException('No se recibió ningún archivo.');
+//     }
+//     return this.productImagesService.upload(
+//       productId,
+//       file,
+//       isPrimary === 'true',
+//     );
+//   }
+
+uploadImage(
+  @Param('id') productId: string,
+  @UploadedFile() file: MulterFile,
+  @Body('isPrimary') isPrimary?: string,
+) {
+  if (!file) {
+    throw new BadRequestException('No se recibió ningún archivo.');
   }
+  return this.productImagesService.upload(
+    productId,
+    file,
+    isPrimary === 'true',
+  );
+}
 
   @Delete(':imageId')
   @ApiOperation({ summary: 'Eliminar imagen de producto' })
