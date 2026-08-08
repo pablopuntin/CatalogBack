@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
   ArrayMinSize,
+  IsIn,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -42,8 +43,27 @@ export class CreateProductDto {
   @IsString({ each: true })
   categoryIds: string[];
 
-  @ApiPropertyOptional({ default: true })
+ @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  @ApiPropertyOptional({ example: true, description: 'Producto destacado' })
+  @IsOptional()
+  @IsBoolean()
+  featured?: boolean;
+
+  @ApiPropertyOptional({
+    example: 'PERCENTAGE',
+    enum: ['PERCENTAGE', 'FIXED', 'TWO_FOR_ONE'],
+    description: 'Tipo de descuento. null = sin descuento',
+  })
+  @IsOptional()
+  @IsIn(['PERCENTAGE', 'FIXED', 'TWO_FOR_ONE', null])
+  discountType?: 'PERCENTAGE' | 'FIXED' | 'TWO_FOR_ONE' | null;
+
+  @ApiPropertyOptional({ example: 20, description: 'Valor del descuento' })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  discountValue?: number | null;
 }

@@ -9,6 +9,7 @@ import {
   IsString,
   ArrayMinSize,
   ValidateNested,
+  IsIn
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -57,10 +58,29 @@ export class CatalogProductDataDto {
   @IsBoolean()
   active?: boolean;
 
-  @ApiPropertyOptional({ example: 'https://picsum.photos/400/400' })
+@ApiPropertyOptional({ example: 'https://picsum.photos/400/400' })
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @ApiPropertyOptional({ example: true, description: 'Producto destacado' })
+  @IsOptional()
+  @IsBoolean()
+  featured?: boolean;
+
+  @ApiPropertyOptional({
+    example: 'PERCENTAGE',
+    enum: ['PERCENTAGE', 'FIXED', 'TWO_FOR_ONE'],
+  })
+  @IsOptional()
+  @IsIn(['PERCENTAGE', 'FIXED', 'TWO_FOR_ONE', null])
+  discountType?: 'PERCENTAGE' | 'FIXED' | 'TWO_FOR_ONE' | null;
+
+  @ApiPropertyOptional({ example: 20 })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  discountValue?: number | null;
+
 }
 
 export class CreateCatalogProductDto {
