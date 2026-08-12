@@ -1,4 +1,3 @@
-//REF crea slug automaticamente
 import {
   BadRequestException,
   ConflictException,
@@ -12,11 +11,15 @@ import slugify from 'slugify';
 
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import type { MulterFile } from 'src/common/types/multer.type';
+
 
 @Injectable()
 export class BrandsService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(dto: CreateBrandDto) {
@@ -174,4 +177,28 @@ export class BrandsService {
       },
     });
   }
+
+  async uploadLogo(id: string, file: MulterFile) {
+    await this.findOne(id);
+
+    const { url } = await this.cloudinaryService.uploadImage(
+      file,
+      'catalog/brands',
+    );
+
+    return this.prisma.brand.update({
+      where: { id },
+      data: { logoUrl: url },
+    });
+  }
+
+  async removeLogo(id: string) {
+    await this.findOne(id);
+
+    return this.prisma.brand.update({
+      where: { id },
+      data: { logoUrl: null },
+    });
+  }
+  
 }
