@@ -85,7 +85,7 @@ export class ProductsService {
     );
   }
 
- const { categoryIds, featured, discountType, discountValue, ...productData } = dto;
+ const { categoryIds, featured, discountType, discountValue, specs, ...productData } = dto;
 
   const created = await this.prisma.product.create({
     data: {
@@ -111,6 +111,8 @@ export class ProductsService {
     discountType,
     discountValue,
   });
+
+  await this.syncSpecs(created.id, specs);
 
   return created;
 }
@@ -181,10 +183,12 @@ async findAllPublic(query: QueryProductsDto = {}) {
         brand: true,
         categories: { include: { category: true } },
         images: { orderBy: { sortOrder: 'asc' } },
+        specs: { orderBy: { sortOrder: 'asc' } },
         promotions: {
           include: { promotion: true },
           where: { promotion: activePromo },
         },
+
       },
       orderBy: { name: 'asc' },
       skip: (page - 1) * limit,
@@ -216,6 +220,7 @@ async findOnePublic(slug: string) {
       brand: true,
       categories: { include: { category: true } },
       images: { orderBy: { sortOrder: 'asc' } },
+      specs: { orderBy: { sortOrder: 'asc' } },
       promotions: {
         include: { promotion: true },
         where: {
@@ -401,6 +406,36 @@ private applyPromotion(product: any) {
     }
   }
 
+
+  // Guarda los detalles técnicos del producto
+  private async syncSpecs(
+    productId: string,
+    specs?: { label: string; value: string }[],
+  ) {
+    if (specs === undefined) return;
+
+    await this.prisma.productSpec.deleteMany({ where: { productId } });
+
+    const clean = specs
+      .filter((s) => s.label?.trim() && s.value?.trim())
+      .map((s, i) => ({
+        productId,
+        label: s.label.trim(),
+        key: slugify(s.label.trim(), {
+          lower: true,
+          strict: true,
+          locale: 'es',
+        }),
+        value: s.value.trim(),
+        sortOrder: i,
+      }));
+
+    if (clean.length > 0) {
+      await this.prisma.productSpec.createMany({ data: clean });
+    }
+  }
+
+
   async findAll() {
     return this.prisma.product.findMany({
       where: {
@@ -445,6 +480,7 @@ private applyPromotion(product: any) {
               sortOrder: 'asc',
             },
           },
+          specs: { orderBy: { sortOrder: 'asc' } },
           promotions: {
             include: { promotion: true },
             where: { promotion: { deletedAt: null, active: true } },
@@ -492,7 +528,7 @@ private applyPromotion(product: any) {
       }
     }
 
-   const { categoryIds, featured, discountType, discountValue, ...productData } =
+   const { categoryIds, featured, discountType, discountValue, specs, ...productData } =
       dto as UpdateProductDto & {
         categoryIds?: string[];
       };
@@ -558,10 +594,10 @@ private applyPromotion(product: any) {
       });
     }
 
+   await this.syncSpecs(updated.id, specs);
+
     return updated;
   }
-
-   
 
   async remove(id: string) {
     await this.findOne(id);
@@ -587,6 +623,7 @@ private applyPromotion(product: any) {
       brand: true,
       categories: { include: { category: true } },
       images: { orderBy: { sortOrder: 'asc' } },
+       specs: { orderBy: { sortOrder: 'asc' } },
     },
     orderBy: { name: 'asc' },
   });
@@ -603,6 +640,7 @@ async findAllInactiveAndDeleted() {
         brand: true,
         categories: { include: { category: true } },
         images: { orderBy: { sortOrder: 'asc' } },
+         specs: { orderBy: { sortOrder: 'asc' } },
       },
       orderBy: { name: 'asc' },
     }),
@@ -614,6 +652,7 @@ async findAllInactiveAndDeleted() {
         brand: true,
         categories: { include: { category: true } },
         images: { orderBy: { sortOrder: 'asc' } },
+         specs: { orderBy: { sortOrder: 'asc' } },
       },
       orderBy: { deletedAt: 'desc' },
     }),

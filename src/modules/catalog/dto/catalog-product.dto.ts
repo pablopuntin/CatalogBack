@@ -13,6 +13,8 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ProductSpecDto } from 'src/modules/products/dto/create-product.dto';
+
 
 export class CatalogCategoryDto {
   @ApiPropertyOptional({ description: 'ID si ya existe' })
@@ -76,10 +78,17 @@ export class CatalogProductDataDto {
   @IsIn(['PERCENTAGE', 'FIXED', 'TWO_FOR_ONE', null])
   discountType?: 'PERCENTAGE' | 'FIXED' | 'TWO_FOR_ONE' | null;
 
-  @ApiPropertyOptional({ example: 20 })
+ @ApiPropertyOptional({ example: 20 })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   discountValue?: number | null;
+
+  @ApiPropertyOptional({ type: [ProductSpecDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductSpecDto)
+  specs?: ProductSpecDto[];
 
 }
 

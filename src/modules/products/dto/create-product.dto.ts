@@ -8,8 +8,24 @@ import {
   IsString,
   ArrayMinSize,
   IsIn,
+  ValidateNested
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+
+
+export class ProductSpecDto {
+  @ApiProperty({ example: 'Cantidad de puertas' })
+  @IsString()
+  @IsNotEmpty()
+  label: string;
+
+  @ApiProperty({ example: '4' })
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
+
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Zapatilla Running X' })
@@ -66,4 +82,14 @@ export class CreateProductDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   discountValue?: number | null;
+
+  @ApiPropertyOptional({
+    type: [ProductSpecDto],
+    description: 'Detalles técnicos (pares etiqueta/valor)',
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductSpecDto)
+  specs?: ProductSpecDto[];
 }
