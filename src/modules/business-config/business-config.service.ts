@@ -147,8 +147,9 @@ async addHeroImage(file: MulterFile) {
     'catalog/business',
   );
 
-  const count = await this.prisma.heroImage.count({
+  const last = await this.prisma.heroImage.findFirst({
     where: { businessConfigId: config.id },
+    orderBy: { sortOrder: 'desc' },
   });
 
   return this.prisma.heroImage.create({
@@ -156,7 +157,7 @@ async addHeroImage(file: MulterFile) {
       businessConfigId: config.id,
       url,
       publicId,
-      sortOrder: count,
+      sortOrder: last ? last.sortOrder + 1 : 0,
     },
   });
 }
