@@ -12,6 +12,7 @@ import { CategoriesService } from '../categories/categories.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { generateSkuBase, buildSku, buildSkuWithSuffix } from 'src/common/helpers/sku.helper';
+import { QueryProductsDto } from './dto/query-products.dto';
 
 
 @Injectable()
@@ -115,44 +116,89 @@ export class ProductsService {
 }
 
 
-//Agregamos metodos para catalogo publico, para filtrar y mostrar solo productos activos y que no se hayan eliminados
+//Agregamos metodos para catalogo publico, para filtrar y mostrar solo productos activos y que no se hayan eliminados, tambien buscar aunque no esten en el front, osea no esten en la paginacion
 //ref con el calculo si del precio final si hay promocion
-async findAllPublic() {
+async findAllPublic(query: QueryProductsDto = {}) {
   const now = new Date();
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 20;
 
-  const products = await this.prisma.product.findMany({
-    where: {
-      deletedAt: null,
-      active: true,
-    },
-    include: {
-      brand: true,
-      categories: { include: { category: true } },
-      images: { orderBy: { sortOrder: 'asc' } },
+  const activePromo = {
+    deletedAt: null,
+    active: true,
+    OR: [{ startsAt: null }, { startsAt: { lte: now } }],
+    AND: [
+      {
+        OR: [{ endsAt: null }, { endsAt: { gte: now } }],
+      },
+    ],
+  };
+
+  const where: any = {
+    deletedAt: null,
+    active: true,
+  };
+
+  if (query.categoria) {
+    where.categories = { some: { category: { slug: query.categoria } } };
+  }
+
+  if (query.marca) {
+    where.brand = { slug: query.marca };
+  }
+
+  if (query.q) {
+    where.name = { contains: query.q, mode: 'insensitive' };
+  }
+
+  const promoFilters: any[] = [];
+
+  if (query.destacado === '1') {
+    promoFilters.push({
       promotions: {
-        include: {
-          promotion: true,
-        },
-        where: {
-          promotion: {
-            deletedAt: null,
-            active: true,
-            OR: [{ startsAt: null }, { startsAt: { lte: now } }],
-            AND: [
-              {
-                OR: [{ endsAt: null }, { endsAt: { gte: now } }],
-              },
-            ],
-          },
+        some: { promotion: { ...activePromo, type: 'FEATURED' } },
+      },
+    });
+  }
+
+  if (query.oferta === '1') {
+    promoFilters.push({
+      promotions: {
+        some: { promotion: { ...activePromo, type: { not: 'FEATURED' } } },
+      },
+    });
+  }
+
+  if (promoFilters.length > 0) {
+    where.AND = promoFilters;
+  }
+
+  const [total, products] = await Promise.all([
+    this.prisma.product.count({ where }),
+    this.prisma.product.findMany({
+      where,
+      include: {
+        brand: true,
+        categories: { include: { category: true } },
+        images: { orderBy: { sortOrder: 'asc' } },
+        promotions: {
+          include: { promotion: true },
+          where: { promotion: activePromo },
         },
       },
-    },
-    orderBy: { name: 'asc' },
-  });
+      orderBy: { name: 'asc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ]);
 
-  return products.map((product) =>
-    this.applyPromotion(product),
-  );
+  return {
+    items: products.map((product) => this.applyPromotion(product)),
+    total,
+    page,
+    limit,
+    hasMore: page * limit < total,
+  };
 }
 
 

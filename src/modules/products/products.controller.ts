@@ -1,4 +1,3 @@
-//ref
 import {
   Body,
   Controller,
@@ -8,6 +7,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -26,6 +26,7 @@ import { SystemRole } from 'src/common/constants/roles';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { QueryProductsDto } from './dto/query-products.dto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -38,10 +39,11 @@ export class ProductsController {
   @Get()
   @ApiOperation({ summary: 'Listar productos activos — público' })
   @ApiOkResponse()
-  findAllPublic() {
-    return this.productsService.findAllPublic();
+  findAllPublic(@Query() query: QueryProductsDto) {
+    return this.productsService.findAllPublic(query);
   }
 
+  
   @Get('slug/:slug')
   @ApiOperation({ summary: 'Obtener producto por slug — público' })
   @ApiOkResponse()
