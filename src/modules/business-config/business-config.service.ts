@@ -32,8 +32,25 @@ export class BusinessConfigService {
     });
   }
 
+  // async find() {
+  //   const businessConfig = await this.prisma.businessConfig.findFirst();
+
+  //   if (!businessConfig) {
+  //     throw new NotFoundException(
+  //       'No existe una configuración del negocio.',
+  //     );
+  //   }
+
+  //   return businessConfig;
+  // }
+
+  //ref
   async find() {
-    const businessConfig = await this.prisma.businessConfig.findFirst();
+    const businessConfig = await this.prisma.businessConfig.findFirst({
+      include: {
+        heroImages: { orderBy: { sortOrder: 'asc' } },
+      },
+    });
 
     if (!businessConfig) {
       throw new NotFoundException(
@@ -43,6 +60,8 @@ export class BusinessConfigService {
 
     return businessConfig;
   }
+
+
 
   async update(updateBusinessConfigDto: UpdateBusinessConfigDto) {
     const businessConfig = await this.prisma.businessConfig.findFirst();
@@ -67,8 +86,33 @@ export class BusinessConfigService {
     });
   }
 
+
    // Método para subir imagen
-async uploadImage(file: MulterFile, type: 'logo' | 'hero') {
+// async uploadImage(file: MulterFile, type: 'logo' | 'hero') {
+//   const config = await this.prisma.businessConfig.findFirst();
+
+//   if (!config) {
+//     throw new NotFoundException(
+//       'No existe una configuración del negocio. Creala primero.',
+//     );
+//   }
+
+//   const { url } = await this.cloudinaryService.uploadImage(
+//     file,
+//     'catalog/business',
+//   );
+
+//   const field = type === 'logo' ? 'logoUrl' : 'heroImageUrl';
+
+//   return this.prisma.businessConfig.update({
+//     where: { id: config.id },
+//     data: { [field]: url },
+//   });
+// }
+
+//ref
+// Logo del negocio (una sola imagen)
+async uploadLogo(file: MulterFile) {
   const config = await this.prisma.businessConfig.findFirst();
 
   if (!config) {
@@ -82,12 +126,55 @@ async uploadImage(file: MulterFile, type: 'logo' | 'hero') {
     'catalog/business',
   );
 
-  const field = type === 'logo' ? 'logoUrl' : 'heroImageUrl';
-
   return this.prisma.businessConfig.update({
     where: { id: config.id },
-    data: { [field]: url },
+    data: { logoUrl: url },
   });
+}
+
+// Imágenes del banner (varias)
+async addHeroImage(file: MulterFile) {
+  const config = await this.prisma.businessConfig.findFirst();
+
+  if (!config) {
+    throw new NotFoundException(
+      'No existe una configuración del negocio. Creala primero.',
+    );
+  }
+
+  const { url, publicId } = await this.cloudinaryService.uploadImage(
+    file,
+    'catalog/business',
+  );
+
+  const count = await this.prisma.heroImage.count({
+    where: { businessConfigId: config.id },
+  });
+
+  return this.prisma.heroImage.create({
+    data: {
+      businessConfigId: config.id,
+      url,
+      publicId,
+      sortOrder: count,
+    },
+  });
+}
+
+async removeHeroImage(id: string) {
+  const image = await this.prisma.heroImage.findUnique({
+    where: { id },
+  });
+
+  if (!image) {
+    throw new NotFoundException('Imagen no encontrada.');
+  }
+
+  if (image.publicId) {
+    await this.cloudinaryService.deleteImage(image.publicId).catch(() => {});
+  }
+
+  return this.prisma.heroImage.delete({ where: { id } });
 }
 
 

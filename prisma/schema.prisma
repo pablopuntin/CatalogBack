@@ -148,7 +148,6 @@ model BusinessConfig {
   legalName    String?
 
   logoUrl      String?
-  heroImageUrl String?
   businessDescription String?
 
   whatsapp String
@@ -168,6 +167,7 @@ model BusinessConfig {
   currency CurrencyCode @default(ARS)
 
   businessHours String?
+  heroImages HeroImage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -399,4 +399,23 @@ model PromotionProduct {
   @@id([promotionId, productId])
 
   @@map("promotion_products")
+}
+
+model HeroImage {
+  id String @id @default(cuid())
+
+  businessConfigId String
+
+  url String
+
+  publicId String?
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  businessConfig BusinessConfig @relation(fields: [businessConfigId], references: [id], onDelete: Cascade)
+
+  @@map("hero_images")
 }

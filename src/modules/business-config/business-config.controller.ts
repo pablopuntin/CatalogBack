@@ -9,6 +9,8 @@ import {
   UseGuards,
   UseInterceptors,
   BadRequestException,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -116,15 +118,35 @@ export class BusinessConfigController {
   })
  uploadLogo(@UploadedFile() file: MulterFile) {
     if (!file) throw new BadRequestException('No se recibió ningún archivo.');
-    return this.businessConfigService.uploadImage(file, 'logo');
+    return this.businessConfigService.uploadLogo(file);
   }
 
-  @Post('hero')
+  // @Post('hero')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(SystemRole.ROOT, SystemRole.ADMIN)
+  // @ApiBearerAuth()
+  // @UseInterceptors(imageInterceptor)
+  // @ApiOperation({ summary: 'Subir imagen hero del negocio' })
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       file: { type: 'string', format: 'binary' },
+  //     },
+  //   },
+  // })
+  // uploadHero(@UploadedFile() file: MulterFile) {
+  //   if (!file) throw new BadRequestException('No se recibió ningún archivo.');
+  //   return this.businessConfigService.uploadImage(file, 'hero');
+  // }
+
+  @Post('hero-images')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.ROOT, SystemRole.ADMIN)
   @ApiBearerAuth()
   @UseInterceptors(imageInterceptor)
-  @ApiOperation({ summary: 'Subir imagen hero del negocio' })
+  @ApiOperation({ summary: 'Agregar una imagen al banner' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -134,8 +156,19 @@ export class BusinessConfigController {
       },
     },
   })
-  uploadHero(@UploadedFile() file: MulterFile) {
+  addHeroImage(@UploadedFile() file: MulterFile) {
     if (!file) throw new BadRequestException('No se recibió ningún archivo.');
-    return this.businessConfigService.uploadImage(file, 'hero');
+    return this.businessConfigService.addHeroImage(file);
+  }
+
+  @Delete('hero-images/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(SystemRole.ROOT, SystemRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Quitar una imagen del banner' })
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  removeHeroImage(@Param('id') id: string) {
+    return this.businessConfigService.removeHeroImage(id);
   }
 }
