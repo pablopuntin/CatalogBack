@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Render está delante de la app: sin esto req.ip es la IP del proxy
+  // y el rate limiter cuenta a todos los visitantes como uno solo.
+  app.set('trust proxy', 1);
 
   //PREFIJO API PARA TODA LA APLICACION
   app.setGlobalPrefix('api');

@@ -21,6 +21,7 @@ import { SystemRole } from 'src/common/constants/roles';
 import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Quotes')
 @Controller('quotes')
@@ -28,7 +29,8 @@ export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 
   // ── Público ──────────────────────────────────────
-  @Post()
+   @Post()
+  @Throttle({ default: { ttl: 60000, limit: 5 } }) // 5 consultas por minuto
   @HttpCode(201)
   @ApiOperation({ summary: 'Registrar consulta desde el catálogo' })
   @ApiCreatedResponse()

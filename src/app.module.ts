@@ -69,10 +69,10 @@ import { ProductImagesModule } from './modules/product-images/product-images.mod
 
 @Module({
   imports: [
-     ThrottlerModule.forRoot([
+         ThrottlerModule.forRoot([
       {
-        ttl: 60000,  // ventana de 1 minuto en milisegundos
-        limit: 10,   // máximo 10 requests por minuto por IP
+        ttl: 60000, // ventana de 1 minuto
+        limit: 120, // techo general por IP — anti-abuso, no anti-navegación
       },
     ]),
     ConfigModule.forRoot({
